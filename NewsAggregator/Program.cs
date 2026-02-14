@@ -5,34 +5,16 @@ using NewsAggregator.Options;
 using NewsAggregator.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
+var services = builder.Services;
+var configuration = builder.Configuration;
 
-builder.Services.Configure<WorkerOptions>(
-    builder.Configuration.GetSection(WorkerOptions.SECTION_NAME));
+services.AddHttpClient();
+services.RegisterOptions(configuration);
 
-builder.Services.Configure<RabbitMqOptions>(
-    builder.Configuration.GetSection(RabbitMqOptions.SECTION_NAME));
+services.RegisterServices();
+services.RegisterNewsApiProviders(configuration);
 
-builder.Services.Configure<RedisOptions>(
-    builder.Configuration.GetSection(RedisOptions.SECTION_NAME));
-
-builder.Services.AddSingleton<NewsCacheService>();
-builder.Services.AddScoped<NewsProducer>();
-
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-        
-        cfg.Host(options.Host, options.VirtualHost,h =>
-        {
-            h.Username(options.Username);
-            h.Password(options.Password);
-        });
-
-        cfg.ConfigureEndpoints(context);
-    });
-});
+services.RegisterMessageBroker();
 
 builder.Services.AddHostedService<Worker>();
 

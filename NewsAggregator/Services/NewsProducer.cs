@@ -5,7 +5,7 @@ namespace NewsAggregator.Services;
 
 public class NewsProducer(IPublishEndpoint publishEndpoint, ILogger<NewsProducer> logger)
 {
-    public async Task SendNewsToQueue(string title, string content, string url)
+    public async Task SendNewsToQueue(string title, string content, string url, string categoryName)
     {
         logger.LogInformation("News is publishing: {Title}", title);
 
@@ -14,6 +14,7 @@ public class NewsProducer(IPublishEndpoint publishEndpoint, ILogger<NewsProducer
             Title = title,
             Content = content,
             Url = url,
+            CategoryName = categoryName,
             ScrapedAt = DateTime.UtcNow
         });
     }

@@ -2,7 +2,7 @@
 
 public class WorkerOptions
 {
-    public const string SECTION_NAME = "Worker";
+    public const string SectionName = "Worker";
 
-    public int SleepDelayMinutes = 30;
+    public int SleepDelayMinutes { get; init; } = 30;
 }

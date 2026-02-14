@@ -16,18 +16,27 @@ public class Worker(ILogger<Worker> logger, IOptions<WorkerOptions> options,ISer
             {
                 var producer = scope.ServiceProvider.GetRequiredService<NewsProducer>();
                 var cache = scope.ServiceProvider.GetRequiredService<NewsCacheService>();
+                var providers = scope.ServiceProvider.GetServices<IRawNewsProvider>();
 
-                var url = "http:/testUrl/2132434324/";
+                foreach (var provider in providers)
+                {
+                    try
+                    {
+                        var news = await provider.GetNewsAsync();
+                        foreach (var item in news)
+                        {
+                            if (await cache.IsAlreadyProcessed(item.Url)) continue;
+
+                            await producer.SendNewsToQueue(item.Title, item.Content, item.Url, item.CategoryName);
+                            await cache.MarkAsProcessed(item.Url);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: log exception
+                    }
+                }
                 
-                if (await cache.IsAlreadyProcessed(url))
-                {
-                    logger.LogInformation("News has already processed: {Url}", url);
-                }
-                else
-                {
-                    await cache.MarkAsProcessed(url);
-                    await producer.SendNewsToQueue("testTitle", "testContent", url);
-                }
             }
             
             await Task.Delay(TimeSpan.FromMinutes(_options.SleepDelayMinutes), stoppingToken);

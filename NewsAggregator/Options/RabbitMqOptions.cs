@@ -2,10 +2,10 @@
 
 public class RabbitMqOptions
 {
-    public const string SECTION_NAME = "MessageBroker";
+    public const string SectionName = "MessageBroker";
 
-    public string Host { get; set; } = "localhost";
-    public string Username { get; set; } = "guest";
-    public string Password { get; set; } = "guest";
-    public string VirtualHost { get; set; } = "/";
+    public string Host { get; init; } = "localhost";
+    public string Username { get; init; } = "guest";
+    public string Password { get; init; } = "guest";
+    public string VirtualHost { get; init; } = "/";
 }

@@ -2,9 +2,9 @@
 
 public class RedisOptions
 {
-    public const string SECTION_NAME = "Redis";
+    public const string SectionName = "Redis";
 
-    public string ConnectionString { get; set; } = "localhost:6379";
-    public string InstanceName { get; set; } = "NewsAggregator_";
-    public int CacheExpirationDays { get; set; } = 1;
+    public string ConnectionString { get; init; } = "localhost:6379";
+    public string InstanceName { get; init; } = "NewsAggregator_";
+    public int CacheExpirationDays { get; init; } = 1;
 }
