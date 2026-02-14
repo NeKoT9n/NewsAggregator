@@ -1,0 +1,27 @@
+﻿services:
+  news-aggregator:
+    build:
+      context: .
+      dockerfile: NewsAggregator/Dockerfile
+    container_name: news-aggregator
+    environment:
+      - MessageBroker__Host=rabbitmq 
+      - Redis__ConnectionString=news-cache:6379
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+        - news-cache
+    networks:
+        - news-shared-net
+
+  news-cache:
+    image: redis:7.2-alpine
+    container_name: news-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - news-shared-net
+
+networks:
+  news-shared-net:
+    external: true
