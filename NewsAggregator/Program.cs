@@ -8,7 +8,11 @@ var builder = Host.CreateApplicationBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-services.AddHttpClient();
+services.AddHttpClient("NewsApi", client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "MyNewsApp/1.0");
+});
+
 services.RegisterOptions(configuration);
 
 services.RegisterServices();

@@ -22,8 +22,8 @@ public class NewsApiProvider : IRawNewsProvider
     public async Task<IReadOnlyList<RawNewsScraped>> GetNewsAsync()
     {
 
-        var client = _httpClientFactory.CreateClient();
-
+        var client = _httpClientFactory.CreateClient("NewsApi");
+        
         try
         {
             var response = await client.GetFromJsonAsync<NewsApiResponse>(_url);
