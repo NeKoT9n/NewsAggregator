@@ -1,9 +1,15 @@
-﻿using MassTransit;
+﻿using AngleSharp;
+using MassTransit;
 using Microsoft.Extensions.Options;
+using NewsAggregator.Infostructure.Options;
+using NewsAggregator.Infostructure.Services;
+using NewsAggregator.Infostructure.Services.ArticleProviders;
+using NewsAggregator.Infostructure.Services.ArticleProviders.RssScrapper;
+using NewsAggregator.Infostructure.Services.Cache;
 using NewsAggregator.Options;
-using NewsAggregator.Options.Providers;
-using NewsAggregator.Services;
-using NewsAggregator.Services.NewsApi;
+using NewsAggregator.Producers;
+using StackExchange.Redis;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace NewsAggregator;
 
@@ -23,36 +29,28 @@ public static class ServicesExtensions
                 configuration.GetSection(RedisOptions.SectionName));
         
         }
-
-        public void RegisterNewsApiProviders(IConfiguration configuration)
-        {
-            var newsApiOptions = configuration
-                .GetSection(NewsApiOptions.SectionName)
-                .Get<NewsApiOptions>();
-
-            if (newsApiOptions == null || string.IsNullOrEmpty(newsApiOptions.ApiKey)) return;
-            foreach (var category in newsApiOptions.Categories)
-            {
-                services.AddTransient<IRawNewsProvider>(sp => 
-                    new NewsApiProvider(
-                        sp.GetRequiredService<IHttpClientFactory>(), 
-                        newsApiOptions.ApiKey, 
-                        category
-                    ));
-            }
-        
-        }
         
         public void RegisterServices()
         {
-            services.AddSingleton<NewsCacheService>();
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<RedisOptions>>().Value;
+                return ConnectionMultiplexer.Connect(options.ConnectionString);
+            });
+            
+            services.AddScoped<NewsCacheService>();
             services.AddScoped<NewsProducer>();
+            services.AddScoped<RssParser>();
+            services.AddScoped<ArticleScraper>();
+            services.AddScoped<IScrapedArticleProvider, ArticleProvider>();
         }
 
         public void RegisterMessageBroker()
         {
             services.AddMassTransit(x =>
             {
+                x.SetKebabCaseEndpointNameFormatter();
+                
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;

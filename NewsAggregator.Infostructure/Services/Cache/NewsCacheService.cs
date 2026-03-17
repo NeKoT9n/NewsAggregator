@@ -1,21 +1,20 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
-using NewsAggregator.Options;
+using NewsAggregator.Infostructure.Options;
 using StackExchange.Redis;
 
-namespace NewsAggregator.Services;
+namespace NewsAggregator.Infostructure.Services.Cache;
 
 public class NewsCacheService
 {
     private readonly IDatabase _db;
     private readonly RedisOptions _options;
 
-    public NewsCacheService(IOptions<RedisOptions> options)
+    public NewsCacheService(IConnectionMultiplexer redis, IOptions<RedisOptions> options)
     {
         _options = options.Value;
         
-        var redis = ConnectionMultiplexer.Connect(_options.ConnectionString);
         _db = redis.GetDatabase();
     }
 

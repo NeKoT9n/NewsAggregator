@@ -1,4 +1,4 @@
-﻿namespace NewsAggregator.Options;
+﻿namespace NewsAggregator.Infostructure.Options;
 
 public class RedisOptions
 {

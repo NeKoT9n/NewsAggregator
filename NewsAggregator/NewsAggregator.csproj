@@ -24,6 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\NewsAggregator.Domain\NewsAggregator.Domain.csproj" />
+      <ProjectReference Include="..\NewsAggregator.Infostructure\NewsAggregator.Infostructure.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 </Project>

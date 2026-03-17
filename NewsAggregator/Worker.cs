@@ -1,11 +1,17 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
+using NewsAggregator.Domain.Models;
+using NewsAggregator.Infostructure.Services;
+using NewsAggregator.Infostructure.Services.ArticleProviders;
 using NewsAggregator.Options;
-using NewsAggregator.Services;
+using NewsAggregator.Producers;
 
 namespace NewsAggregator;
 
-public class Worker(ILogger<Worker> logger, IOptions<WorkerOptions> options,IServiceScopeFactory serviceScopeFactory) : BackgroundService
+public class Worker(
+    ILogger<Worker> logger,
+    IOptions<WorkerOptions> options,
+    IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
     private readonly WorkerOptions _options = options.Value;
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -15,27 +21,35 @@ public class Worker(ILogger<Worker> logger, IOptions<WorkerOptions> options,ISer
             using (var scope = serviceScopeFactory.CreateScope())
             {
                 var producer = scope.ServiceProvider.GetRequiredService<NewsProducer>();
-                var cache = scope.ServiceProvider.GetRequiredService<NewsCacheService>();
-                var providers = scope.ServiceProvider.GetServices<IRawNewsProvider>();
+                var articleProvider = scope.ServiceProvider.GetRequiredService<IScrapedArticleProvider>();
 
-                foreach (var provider in providers)
+                Source testSource = new Source()
                 {
-                    try
+                    RssUrl = "https://www.onliner.by/feed",
+                    ScraperConfig = new SourceScraperConfig
                     {
-                        var news = await provider.GetNewsAsync();
-                        foreach (var item in news)
-                        {
-                            if (await cache.IsAlreadyProcessed(item.Url)) continue;
+                        ArticleContentSelector = ".news-text",
+                        ImageSelector = ".news-media.news-media_condensed img, .news-header__image",
+                        IgnoreSelector = "script, style, .news-widget, .news-banner, .news-helpers, .news-incut, .news-reference, .news-video"
+                    }
+                };
 
-                            await producer.SendNewsToQueue(item.Title, item.Content, item.Url, item.CategoryName);
-                            await cache.MarkAsProcessed(item.Url);
-                        }
-                    }
-                    catch (Exception ex)
+                try
+                {
+                    var articles = await articleProvider.GetArticlesAsync(testSource);
+                    
+                    foreach (var article in articles)
                     {
-                        //TODO: log exception
+
+                        await producer.Publish(article);
                     }
+                    
                 }
+                catch (Exception)
+                {
+                    //TODO: log exception
+                }
+                
                 
             }
             
