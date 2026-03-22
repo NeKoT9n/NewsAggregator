@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\NewsApi\Shared\Shared.csproj" />
       <ProjectReference Include="..\NewsAggregator.Domain\NewsAggregator.Domain.csproj" />
-      <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

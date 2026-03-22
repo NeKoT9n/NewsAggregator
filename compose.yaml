@@ -5,13 +5,30 @@
       dockerfile: NewsAggregator/Dockerfile
     container_name: news-aggregator
     environment:
-      - MessageBroker__Host=rabbitmq 
+      - ConnectionStrings__AggregatorDb=Host=aggregator-db;Database=aggregator_db;Username=admin;Password=secret
       - Redis__ConnectionString=news-cache:6379
+      - MessageBroker__Host=rabbitmq 
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
-        - news-cache
+      - aggregator-db
+      - news-cache
     networks:
-        - news-shared-net
+      - news-shared-net
+      
+  aggregator-db:
+    image: postgres:16-alpine
+    container_name: aggregator-db
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=aggregator_db
+    ports:
+      - "5433:5432" 
+    volumes:
+      - aggregator_db_data:/var/lib/postgresql/data
+    networks:
+      - news-shared-net
 
   news-cache:
     image: redis:7.2-alpine
@@ -22,6 +39,9 @@
     networks:
       - news-shared-net
 
+volumes:
+  aggregator_db_data:
+    
 networks:
   news-shared-net:
     external: true

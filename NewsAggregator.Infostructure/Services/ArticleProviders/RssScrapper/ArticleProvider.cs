@@ -1,4 +1,6 @@
-﻿using NewsAggregator.Domain.Models;
+﻿using System.Security.Cryptography;
+using System.Text;
+using NewsAggregator.Domain.Models;
 using NewsAggregator.Infostructure.Services.Cache;
 using Shared.Models.Messages;
 
@@ -11,14 +13,25 @@ public class ArticleProvider(
     : IScrapedArticleProvider
 {
     
-    public async Task<IReadOnlyList<ScrapedArticleDto>> GetArticlesAsync(Source source)
+    public async Task<IReadOnlyList<ScrapedArticleMessage>> GetArticlesAsync(Source source)
     {
         ArgumentNullException.ThrowIfNull(source);
         
-        var results = new List<ScrapedArticleDto>();
+        var results = new List<ScrapedArticleMessage>();
         
         var items = await rssParser.ParseAsync(source.RssUrl);
+        
+        if (items.Count == 0) 
+            return results;
+        
+        var latestItem = items.First();
+        var currentFeedHash = GenerateHash($"{latestItem.Url}_{latestItem.PublishedAt}");
+        
+        if (source.LastProcessedHash == currentFeedHash)
+            return results;
 
+        source.LastProcessedHash = currentFeedHash;
+        
         foreach (var item in items)
         {
             if (await cache.IsAlreadyProcessed(item.Url)) continue;
@@ -27,7 +40,7 @@ public class ArticleProvider(
             {
                 var fullArticle = await scraper.ScrapeAsync(item, source);
                 
-                results.Add(new ScrapedArticleDto
+                results.Add(new ScrapedArticleMessage
                 {
                     SourceId = source.Id,
                     Title = fullArticle.Title,
@@ -51,5 +64,11 @@ public class ArticleProvider(
         }
 
         return results;
+    }
+
+    private string GenerateHash(string input)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(bytes);
     }
 }

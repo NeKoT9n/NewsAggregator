@@ -20,7 +20,7 @@ public class ArticleScraper(IHttpClientFactory clientFactory)
         var contentNode = document.QuerySelector(scraperConfig.ArticleContentSelector ?? "article");
 
         if (contentNode == null)
-            return new ScrappedArticle(rssItem.Title, "Content not found", null, rssItem.Url, rssItem.PublishDate);
+            return new ScrappedArticle(rssItem.Title, "Content not found", null, rssItem.Url, rssItem.PublishedAt);
 
 
         if (!string.IsNullOrEmpty(scraperConfig.IgnoreSelector))
@@ -43,7 +43,7 @@ public class ArticleScraper(IHttpClientFactory clientFactory)
             cleanText,
             imageUrl,
             rssItem.Url,
-            rssItem.PublishDate
+            rssItem.PublishedAt
         );
         
     }

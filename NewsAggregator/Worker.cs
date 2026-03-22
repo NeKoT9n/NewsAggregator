@@ -1,7 +1,7 @@
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NewsAggregator.DataAccess;
 using NewsAggregator.Domain.Models;
-using NewsAggregator.Infostructure.Services;
 using NewsAggregator.Infostructure.Services.ArticleProviders;
 using NewsAggregator.Options;
 using NewsAggregator.Producers;
@@ -22,35 +22,40 @@ public class Worker(
             {
                 var producer = scope.ServiceProvider.GetRequiredService<NewsProducer>();
                 var articleProvider = scope.ServiceProvider.GetRequiredService<IScrapedArticleProvider>();
+                var sourceContext = scope.ServiceProvider.GetRequiredService<SourceDbContext>();
 
-                Source testSource = new Source()
+                var sources = await sourceContext.Sources
+                    .Where(s => s.IsActive)
+                    .Include(s => s.ScraperConfig)
+                    .ToListAsync(stoppingToken);
+
+                foreach (var source in sources)
                 {
-                    RssUrl = "https://www.onliner.by/feed",
-                    ScraperConfig = new SourceScraperConfig
+                    try
                     {
-                        ArticleContentSelector = ".news-text",
-                        ImageSelector = ".news-media.news-media_condensed img, .news-header__image",
-                        IgnoreSelector = "script, style, .news-widget, .news-banner, .news-helpers, .news-incut, .news-reference, .news-video"
-                    }
-                };
-
-                try
-                {
-                    var articles = await articleProvider.GetArticlesAsync(testSource);
+                        var articles = await articleProvider.GetArticlesAsync(source);
+                        
+                        foreach (var article in articles)
+                        {
+                            try 
+                            {
+                                await producer.Publish(article, stoppingToken);
+                                await Task.Delay(_options.MessagePublishDelay, stoppingToken);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Failed to publish article: {Title}", article.Title);
+                            }
+                        }
                     
-                    foreach (var article in articles)
+                        source.LastSyncAt = DateTime.UtcNow;
+                        await sourceContext.SaveChangesAsync(stoppingToken);
+                    }
+                    catch (Exception ex)
                     {
-
-                        await producer.Publish(article);
+                        logger.LogError(ex, "Error while article scrapping");
                     }
-                    
                 }
-                catch (Exception)
-                {
-                    //TODO: log exception
-                }
-                
-                
             }
             
             await Task.Delay(TimeSpan.FromMinutes(_options.SleepDelayMinutes), stoppingToken);

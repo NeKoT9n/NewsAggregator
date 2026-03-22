@@ -1,6 +1,6 @@
 ﻿namespace Shared.Models.Messages;
 
-public record ScrapedArticleDto
+public record ScrapedArticleMessage
 {
     public Guid MessageId { get; init; } = Guid.NewGuid();
     public long SourceId { get; init; }

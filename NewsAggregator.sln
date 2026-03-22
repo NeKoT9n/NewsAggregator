@@ -7,13 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{B09ED223-9B07-420B-8B26-DCFE7F6007FF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Domain", "NewsAggregator.Domain\NewsAggregator.Domain.csproj", "{674E4DF7-3058-41B9-B94E-14F114B65B2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.Infostructure", "NewsAggregator.Infostructure\NewsAggregator.Infostructure.csproj", "{37AFAF56-4B38-495C-8232-6123790C77C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsAggregator.DataAccess", "NewsAggregator.DataAccess\NewsAggregator.DataAccess.csproj", "{F9AE1235-A9AE-490C-ACB6-BBBADCE31C8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "..\NewsApi\Shared\Shared.csproj", "{4DF0020F-8CDE-4CDB-AFC1-062EBC3D2DD0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,6 @@ Global
 		{C186EB60-B5B9-4329-B157-34AC1EEAB3A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C186EB60-B5B9-4329-B157-34AC1EEAB3A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C186EB60-B5B9-4329-B157-34AC1EEAB3A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B09ED223-9B07-420B-8B26-DCFE7F6007FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B09ED223-9B07-420B-8B26-DCFE7F6007FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B09ED223-9B07-420B-8B26-DCFE7F6007FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B09ED223-9B07-420B-8B26-DCFE7F6007FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{674E4DF7-3058-41B9-B94E-14F114B65B2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{674E4DF7-3058-41B9-B94E-14F114B65B2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{674E4DF7-3058-41B9-B94E-14F114B65B2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -41,5 +37,9 @@ Global
 		{F9AE1235-A9AE-490C-ACB6-BBBADCE31C8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9AE1235-A9AE-490C-ACB6-BBBADCE31C8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9AE1235-A9AE-490C-ACB6-BBBADCE31C8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DF0020F-8CDE-4CDB-AFC1-062EBC3D2DD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DF0020F-8CDE-4CDB-AFC1-062EBC3D2DD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DF0020F-8CDE-4CDB-AFC1-062EBC3D2DD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DF0020F-8CDE-4CDB-AFC1-062EBC3D2DD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
