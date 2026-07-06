@@ -1,11 +1,13 @@
 ﻿services:
   news-aggregator:
     build:
-      context: .
-      dockerfile: NewsAggregator/Dockerfile
+      context: ../
+      dockerfile: NewsAggregator/NewsAggregator/Dockerfile
     container_name: news-aggregator
+    ports:
+      - "5005:8080"
     environment:
-      - ConnectionStrings__AggregatorDb=Host=aggregator-db;Database=aggregator_db;Username=admin;Password=secret
+      - ConnectionStrings__SourceDbContext=Host=aggregator-db;Database=aggregator_db;Username=admin;Password=secret
       - Redis__ConnectionString=news-cache:6379
       - MessageBroker__Host=rabbitmq 
       - ASPNETCORE_ENVIRONMENT=Development

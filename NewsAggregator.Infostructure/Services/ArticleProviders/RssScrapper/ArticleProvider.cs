@@ -38,8 +38,13 @@ public class ArticleProvider(
 
             try
             {
-                var fullArticle = await scraper.ScrapeAsync(item, source);
-                
+                var result = await scraper.ScrapeAsync(item, source.ScraperConfig!);
+
+                if (result.IsFailure)
+                    throw new Exception();
+
+                var fullArticle = result.Value;
+                        
                 results.Add(new ScrapedArticleMessage
                 {
                     SourceId = source.Id,
@@ -66,7 +71,7 @@ public class ArticleProvider(
         return results;
     }
 
-    private string GenerateHash(string input)
+    private static string GenerateHash(string input)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(bytes);

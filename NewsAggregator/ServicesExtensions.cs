@@ -1,16 +1,19 @@
 ﻿using AngleSharp;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using NewsAggregator.DataAccess;
 using NewsAggregator.Infostructure.Options;
+using NewsAggregator.Infostructure.Producers;
 using NewsAggregator.Infostructure.Services;
 using NewsAggregator.Infostructure.Services.ArticleProviders;
 using NewsAggregator.Infostructure.Services.ArticleProviders.RssScrapper;
 using NewsAggregator.Infostructure.Services.Cache;
 using NewsAggregator.Options;
-using NewsAggregator.Producers;
 using StackExchange.Redis;
+using System.Text;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace NewsAggregator;
@@ -44,16 +47,47 @@ public static class ServicesExtensions
             services.AddScoped<NewsProducer>();
             services.AddScoped<RssParser>();
             services.AddScoped<ArticleScraper>();
+            services.AddScoped<SourceService>();
+            services.AddScoped<SourceTester>();
             services.AddScoped<IScrapedArticleProvider, ArticleProvider>();
+            services.AddScoped<INewsAggregationService, NewsAggregationService>();
+        }
+
+        public void AddAuthentication(IConfiguration configuration)
+        {
+            var jwtSettings = configuration.GetSection("JwtSettings");
+            var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            services.AddAuthorization();
         }
 
         public void RegisterHttpClients()
         {
             services.AddHttpClient("rss", client =>
             {
-                client.DefaultRequestHeaders.Add("User-Agent", "NewsAggregator/1.0");
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+                client.DefaultRequestHeaders.Add("Accept", "application/xml, text/xml, application/rss+xml, */*");
+                client.Timeout = TimeSpan.FromSeconds(20); 
             });
-
             services.AddHttpClient("scraper", client =>
             {
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
